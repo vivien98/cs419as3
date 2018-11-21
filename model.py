@@ -17,24 +17,48 @@ You might also make separate classes for separate tasks , or for separate kinds 
 class myNeuralNet:
 	# you can add/modify arguments of *ALL* functions
 	# you might also add new functions, but *NOT* remove these ones
-	def __init__(self, dim_input_data, dim_output_data): # you can add/modify arguments of this function 
+	def __init__(self, dim_input_data, dim_output_data,num_layers = 2): # you can add/modify arguments of this function 
 		# Using such 'self-ization', you can access these members in later functions of the class
 		# You can do such 'self-ization' on tensors also, there is no change
 		self.dim_input_data = dim_input_data
 		self.dim_output_data = dim_output_data
+		self.num_perc_arr = [dim_input_data,dim_output_data]
 
+		self.inp = tf.placeholder(tf.float32,[None,dim_input_data])
+		self.oput = tf.placeholder(tf.float32,[None,dim_output_data])
+		first_layer_weight = tf.Variable(tf.random_normal([dim_input_data,dim_output_data]))
+		first_layer_bias = tf.Variable(tf.zeros([1,dim_output_data]))
+
+		self.layer_weight_list = [first_layer_weight]
+		self.layer_bias_list = [first_layer_bias]
 		# Create placeholders for input : data as well as labels
 		# You might want to initialising some container to store all the layers of the network
 
 	def addHiddenLayer(self, layer_dim, activation_fn=None, regularizer_fn=None):
 		# Add a layer to the network of layer_dim
 		# It might be a good idea to append the new layer to the container of layers that you initialized before
+		num_perc_arr[-1] = (layer_dim)
+		num_perc_arr.append(dim_output_data)
+
+		del layer_weight_list[-1]
+		layer_weight_list.append(tf.Variable(tf.random_normal([num_perc_arr[-3],num_perc_arr[-2]])))
+		layer_weight_list.append(tf.Variable(tf.random_normal([num_perc_arr[-2],num_perc_arr[-1]])))
+		layer_bias_list[-1] = tf.Variable(tf.zeros([1,layer_dim]))
+		first_layer_bias = tf.Variable(tf.zeros([1,dim_output_data]))
+		layer_bias_list.append(first_layer_bias)
+
 		pass
 
 	def addFinalLayer(self, activation_fn=None, regularizer_fn=None):
 		# We don't take layer_dim here, since the dimensionality of final layer is
 		# already stored in self.dim_output_data
-
+		fwd_pass = self.inp
+		
+		for i in range(size(layer_weight_list)):
+			fwd_pass = tf.add(tf.matmul(fwd_pass,layer_weight_list[i]),layer_bias_list[i])
+		
+		self.final_out = fwd_pass
+		 
 		# Create the output of the final layer as logits
 		# You might also like to apply the final activation function (softmax / sigmoid) to get the predicted labels
 		pass
@@ -42,6 +66,7 @@ class myNeuralNet:
 	def setup_training(self, learn_rate):
 		# Define loss, you might want to store it as self.loss
 		# Define the train step as self.train_step = ..., use an optimizer from tf.train and call minimize(self.loss)
+		self.loss = 
 		pass
 
 	def setup_metrics(self):
