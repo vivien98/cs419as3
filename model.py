@@ -54,10 +54,10 @@ class myNeuralNet:
 		# already stored in self.dim_output_data
 		fwd_pass = self.inp
 		
-		for i in range(len(self.layer_weight_list)):
+		for i in range(len(self.layer_weight_list)-1):
 			fwd_pass = tf.add(tf.matmul(fwd_pass,self.layer_weight_list[i]),self.layer_bias_list[i])
 			fwd_pass = tf.nn.relu(fwd_pass)
-		
+		fwd_pass = tf.add(tf.matmul(fwd_pass,self.layer_weight_list[-1]),self.layer_bias_list[-1])
 		self.mlp_out = fwd_pass
 
 		# Create the output of the final layer as logits
@@ -67,7 +67,7 @@ class myNeuralNet:
 	def setup_training(self, learn_rate):
 		# Define loss, you might want to store it as self.loss
 		# Define the train step as self.train_step = ..., use an optimizer from tf.train and call minimize(self.loss)
-		self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(self.mlp_out,self.oput))
+		self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(labels = self.oput,logits = self.mlp_out))
 		self.train_step = tf.train.AdamOptimizer(learn_rate).minimize(self.loss)
 		pass
 
@@ -75,60 +75,80 @@ class myNeuralNet:
 		# Use the predicted labels and compare them with the input labels(placeholder defined in __init__)
 		# to calculate accuracy, and store it as self.accuracy
 		compare = tf.equal(tf.argmax(self.mlp_out,1),tf.argmax(self.oput,1))
-		self.accuracy = tf.reduce_mean(compare)
+		self.accuracy = tf.reduce_mean(tf.cast(compare,tf.float32))
 		pass
 	
 	# you will need to add other arguments to this function as given below
-	def train(self, sess, max_epochs, batch_size, train_size, print_step = 100): # valid_size, test_size, etc
+	def train(self, sess, max_epochs, batch_size, train_size,train_inp,train_op,val_inp,val_op,test_inp, print_step = 100): # valid_size, test_size, etc
 		# Write your training part here
 		# sess is a tensorflow session, used to run the computation graph
 		# note that all the functions uptil now were just constructing the computation graph
 		
 		# one 'epoch' represents that the network has seen the entire dataset once - it is just standard terminology
 		steps_per_epoch = int(train_size/batch_size)
+		train_sub_in = np.split(train_inp,steps_per_epoch)
+		train_sub_out = np.split(train_op,steps_per_epoch)
 		max_steps = max_epochs * steps_per_epoch
 		for step in range(max_steps):
 			# read a batch of data from the training data
 			# now run the train_step, self.loss on this batch of training data. something like :
-
-			_, train_loss = sess.run([self.train_step, self.loss], feed_dict={self.inp: , self.oput: })
+			in_batch = train_sub_in[step%steps_per_epoch]
+			out_batch = train_sub_out[step%steps_per_epoch] 
+			_, train_loss = sess.run(	[self.train_step, self.loss], feed_dict={self.inp:in_batch , self.oput: out_batch})
 			if (step % print_step) == 0:
 				# read the validation dataset and report loss, accuracy on it by running
 
-				val_acc, val_loss = sess.run([self.accuracy, self.loss], feed_dict={self.inp: , self.oput: '''here, feed in your placeholders with the data you read in the comment above'''})
+				val_acc, val_loss = sess.run([self.accuracy, self.loss], feed_dict={self.inp:val_inp , self.oput:val_op })
+				print(val_acc)
 				# remember that the above will give you val_acc, val_loss as numpy values and not tensors
-				pass
-			# store these train_loss and validation_loss in lists/arrays, write code to plot them vs steps
+				# store these train_loss and validation_loss in lists/arrays, write code to plot them vs steps
 			# Above curves are *REALLY* important, they give deep insights on what's going on
 		# -- for loop ends --
 		# Now once training is done, run predictions on the test set
 
 		self.test_pred = tf.argmax(self.mlp_out,1)
-		test_predictions = sess.run([self.test_pred], feed_dict={self.inp: '''here, feed in test dataset'''})
+		test_predictions = sess.run([self.test_pred], feed_dict={self.inp:test_inp })
 		return test_predictions
 		# This is because we will ask you to submit test_predictions, and some marks will be based on how your net performs on these unseen instances (test set)
 		'''
 		We have done everything in train(), but
 		you might want to create another function named eval(),
 		which calculates the predictions on test instances ...
+	
 		'''
-input_data = [[1,1,1],[1,-1,1],[1,2,3]]
-nn1 = myNeuralNet(3,4)
-nn1.addHiddenLayer(5)
-nn1.addHiddenLayer(6)
+
+mnist_train_inp = np.load('./data/mnist/xtrain.npy')
+mnist_train_op = np.load('./data/mnist/ytrain.npy')
+mnist_val_in = np.load('./data/mnist/xval.npy')#.tolist()
+mnist_val_op = np.load('./data/mnist/yval.npy')#.tolist()
+mnist_test_in = np.load('./data/mnist/xtest.npy')#.tolist()
+max_epochs = 10
+batch_size = 100
+train_size = len(mnist_train_inp)
+#input_data = [[1,1,1],[1,-1,1],[1,2,3]]
+nn1 = myNeuralNet(784,10)
+nn1.addHiddenLayer(256)
+nn1.addHiddenLayer(256)
 nn1.addFinalLayer()
+nn1.setup_training(0.001)
+nn1.setup_metrics()
 
 sess = tf.Session()
 init = tf.global_variables_initializer()
 
 sess.run(init)
+
+test_out = nn1.train(sess,max_epochs,batch_size,train_size,mnist_train_inp,mnist_train_op,mnist_val_in,mnist_val_op,mnist_test_in,50)
+np.save('mnist_out.npy',test_out)
+sess.close()
+'''
 pr1=sess.run([nn1.mlp_out],feed_dict={nn1.inp:input_data})
 pr3 = sess.run(nn1.layer_weight_list)
 pr2 = sess.run(nn1.layer_bias_list)
 print(pr3)
 print(pr2)
 print(pr1)
-
+'''
 
 '''
 	NOTE:
