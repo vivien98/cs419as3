@@ -17,7 +17,7 @@ You might also make separate classes for separate tasks , or for separate kinds 
 class myNeuralNet:
 	# you can add/modify arguments of *ALL* functions
 	# you might also add new functions, but *NOT* remove these ones
-	def __init__(self, dim_input_data, dim_output_data,num_layers = 2): # you can add/modify arguments of this function 
+	def __init__(self, dim_input_data, dim_output_data): # you can add/modify arguments of this function 
 		# Using such 'self-ization', you can access these members in later functions of the class
 		# You can do such 'self-ization' on tensors also, there is no change
 		self.dim_input_data = dim_input_data
@@ -37,15 +37,15 @@ class myNeuralNet:
 	def addHiddenLayer(self, layer_dim, activation_fn=None, regularizer_fn=None):
 		# Add a layer to the network of layer_dim
 		# It might be a good idea to append the new layer to the container of layers that you initialized before
-		num_perc_arr[-1] = (layer_dim)
-		num_perc_arr.append(dim_output_data)
+		self.num_perc_arr[-1] = (layer_dim)
+		self.num_perc_arr.append(self.dim_output_data)
 
-		del layer_weight_list[-1]
-		layer_weight_list.append(tf.Variable(tf.random_normal([num_perc_arr[-3],num_perc_arr[-2]])))
-		layer_weight_list.append(tf.Variable(tf.random_normal([num_perc_arr[-2],num_perc_arr[-1]])))
-		layer_bias_list[-1] = tf.Variable(tf.zeros([1,layer_dim]))
-		first_layer_bias = tf.Variable(tf.zeros([1,dim_output_data]))
-		layer_bias_list.append(first_layer_bias)
+		del self.layer_weight_list[-1]
+		self.layer_weight_list.append(tf.Variable(tf.random_normal([self.num_perc_arr[-3],self.num_perc_arr[-2]])))
+		self.layer_weight_list.append(tf.Variable(tf.random_normal([self.num_perc_arr[-2],self.num_perc_arr[-1]])))
+		self.layer_bias_list[-1] = tf.Variable(tf.random_normal([1,layer_dim]))
+		first_layer_bias = tf.Variable(tf.random_normal([1,self.dim_output_data]))
+		self.layer_bias_list.append(first_layer_bias)
 
 		pass
 
@@ -54,24 +54,28 @@ class myNeuralNet:
 		# already stored in self.dim_output_data
 		fwd_pass = self.inp
 		
-		for i in range(size(layer_weight_list)):
-			fwd_pass = tf.add(tf.matmul(fwd_pass,layer_weight_list[i]),layer_bias_list[i])
+		for i in range(len(self.layer_weight_list)):
+			fwd_pass = tf.add(tf.matmul(fwd_pass,self.layer_weight_list[i]),self.layer_bias_list[i])
+			fwd_pass = tf.nn.relu(fwd_pass)
 		
-		self.final_out = fwd_pass
-		 
+		self.mlp_out = fwd_pass
+
 		# Create the output of the final layer as logits
 		# You might also like to apply the final activation function (softmax / sigmoid) to get the predicted labels
-		pass
+		
 	
 	def setup_training(self, learn_rate):
 		# Define loss, you might want to store it as self.loss
 		# Define the train step as self.train_step = ..., use an optimizer from tf.train and call minimize(self.loss)
-		self.loss = 
+		self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(self.mlp_out,self.oput))
+		self.train_step = tf.train.AdamOptimizer(learn_rate).minimize(self.loss)
 		pass
 
 	def setup_metrics(self):
 		# Use the predicted labels and compare them with the input labels(placeholder defined in __init__)
 		# to calculate accuracy, and store it as self.accuracy
+		compare = tf.equal(tf.argmax(self.mlp_out,1),tf.argmax(self.oput,1))
+		self.accuracy = tf.reduce_mean(compare)
 		pass
 	
 	# you will need to add other arguments to this function as given below
@@ -86,17 +90,21 @@ class myNeuralNet:
 		for step in range(max_steps):
 			# read a batch of data from the training data
 			# now run the train_step, self.loss on this batch of training data. something like :
-			_, train_loss = sess.run([self.train_step, self.loss], feed_dict={'''here, feed in your placeholders with the data you read in the previous to previous comment'''})
+
+			_, train_loss = sess.run([self.train_step, self.loss], feed_dict={self.inp: , self.oput: })
 			if (step % print_step) == 0:
 				# read the validation dataset and report loss, accuracy on it by running
-				val_acc, val_loss = sess.run([self.accuracy, self.loss], feed_dict={'''here, feed in your placeholders with the data you read in the comment above'''})
+
+				val_acc, val_loss = sess.run([self.accuracy, self.loss], feed_dict={self.inp: , self.oput: '''here, feed in your placeholders with the data you read in the comment above'''})
 				# remember that the above will give you val_acc, val_loss as numpy values and not tensors
 				pass
 			# store these train_loss and validation_loss in lists/arrays, write code to plot them vs steps
 			# Above curves are *REALLY* important, they give deep insights on what's going on
 		# -- for loop ends --
 		# Now once training is done, run predictions on the test set
-		test_predictions = sess.run('''here, put something like self.predictions that you would have made somewhere''', feed_dict={'''here, feed in test dataset'''})
+
+		self.test_pred = tf.argmax(self.mlp_out,1)
+		test_predictions = sess.run([self.test_pred], feed_dict={self.inp: '''here, feed in test dataset'''})
 		return test_predictions
 		# This is because we will ask you to submit test_predictions, and some marks will be based on how your net performs on these unseen instances (test set)
 		'''
@@ -104,14 +112,31 @@ class myNeuralNet:
 		you might want to create another function named eval(),
 		which calculates the predictions on test instances ...
 		'''
+input_data = [[1,1,1],[1,-1,1],[1,2,3]]
+nn1 = myNeuralNet(3,4)
+nn1.addHiddenLayer(5)
+nn1.addHiddenLayer(6)
+nn1.addFinalLayer()
 
-	'''
+sess = tf.Session()
+init = tf.global_variables_initializer()
+
+sess.run(init)
+pr1=sess.run([nn1.mlp_out],feed_dict={nn1.inp:input_data})
+pr3 = sess.run(nn1.layer_weight_list)
+pr2 = sess.run(nn1.layer_bias_list)
+print(pr3)
+print(pr2)
+print(pr1)
+
+
+'''
 	NOTE:
 	you might find it convenient to make 3 different train functions corresponding to the three different tasks,
 	and call the relevant one from each train_*.py
 	The reason for this is that the arguments to the train() are different across the tasks
-	'''
-	'''
+'''
+'''
 	Example, for the speech part, the train() would look something like :
 	(NOTE: this is only a rough structure, we don't claim that this is exactly what you have to do.)
 	
@@ -130,4 +155,4 @@ class myNeuralNet:
 			sess.run(self.train_step, feed_dict={input_data: trn_signal, input_labels: trn_labels})
 		test_prediction = sess.run([self.predictions], feed_dict={input_data: test_signal})
 		return test_prediction
-	'''
+'''
