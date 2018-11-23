@@ -86,8 +86,8 @@ class myNeuralNet:
 		
 		# one 'epoch' represents that the network has seen the entire dataset once - it is just standard terminology
 		steps_per_epoch = int(train_size/batch_size)
-		train_sub_in = np.split(train_inp,steps_per_epoch)
-		train_sub_out = np.split(train_op,steps_per_epoch)
+		train_sub_in = np.array_split(train_inp,steps_per_epoch)
+		train_sub_out = np.array_split(train_op,steps_per_epoch)
 		max_steps = max_epochs * steps_per_epoch
 		for step in range(max_steps):
 			# read a batch of data from the training data
@@ -117,30 +117,7 @@ class myNeuralNet:
 	
 		'''
 
-mnist_train_inp = np.load('./data/mnist/xtrain.npy')
-mnist_train_op = np.load('./data/mnist/ytrain.npy')
-mnist_val_in = np.load('./data/mnist/xval.npy')#.tolist()
-mnist_val_op = np.load('./data/mnist/yval.npy')#.tolist()
-mnist_test_in = np.load('./data/mnist/xtest.npy')#.tolist()
-max_epochs = 10
-batch_size = 100
-train_size = len(mnist_train_inp)
-#input_data = [[1,1,1],[1,-1,1],[1,2,3]]
-nn1 = myNeuralNet(784,10)
-nn1.addHiddenLayer(256)
-nn1.addHiddenLayer(256)
-nn1.addFinalLayer()
-nn1.setup_training(0.001)
-nn1.setup_metrics()
 
-sess = tf.Session()
-init = tf.global_variables_initializer()
-
-sess.run(init)
-
-test_out = nn1.train(sess,max_epochs,batch_size,train_size,mnist_train_inp,mnist_train_op,mnist_val_in,mnist_val_op,mnist_test_in,50)
-np.save('mnist_out.npy',test_out)
-sess.close()
 '''
 pr1=sess.run([nn1.mlp_out],feed_dict={nn1.inp:input_data})
 pr3 = sess.run(nn1.layer_weight_list)

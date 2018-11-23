@@ -135,7 +135,7 @@ nn_instance.setup_metrics()
 # Training steps
 with tf.Session() as sess:
 	sess.run(tf.global_variables_initializer())
-	test_pred = nn_instance.train(sess,max_epochs,batch_size,train_size,train_signal,train_lbls,valid_signal,valid_lbls,test_signal,10) # add more arguments here
+	test_pred = nn_instance.train(sess,max_epochs,batch_size,train_size,train_signal,train_lbls,valid_signal,valid_lbls,test_signal,1) # add more arguments here
 	np.save('speech_out.npy',test_pred)
 	sess.close()
 # write code here to store test_pred in relevant file

@@ -7,41 +7,30 @@ import numpy as np
 from model import myNeuralNet
 
 # x denotes features, y denotes labels
-xtrain = np.load('data/mnist/xtrain.npy')
-ytrain = np.load('data/mnist/ytrain.npy')
-
-xval = np.load('data/mnist/xval.npy')
-yval = np.load('data/mnist/yval.npy')
-
-xtest = np.load('data/mnist/xtest.npy')
-
-dim_input = 784
-dim_output = 10
-
+mnist_train_inp = np.load('./data/mnist/xtrain.npy')
+mnist_train_op = np.load('./data/mnist/ytrain.npy')
+mnist_val_in = np.load('./data/mnist/xval.npy')
+mnist_val_op = np.load('./data/mnist/yval.npy')
+mnist_test_in = np.load('./data/mnist/xtest.npy')
 max_epochs = 10
-learn_rate = 1e-4
-batch_size = 50
+batch_size = 100
+train_size = len(mnist_train_inp)
+#input_data = [[1,1,1],[1,-1,1],[1,2,3]]
+nn1 = myNeuralNet(784,10)
+nn1.addHiddenLayer(500)
+nn1.addHiddenLayer(500)
+nn1.addFinalLayer()
+nn1.setup_training(0.001)
+nn1.setup_metrics()
 
-train_size = len(xtrain)
-valid_size = len(xval)
-test_size = len(xtest)
+sess = tf.Session()
+init = tf.global_variables_initializer()
 
-total_images = []
-total_labels = []
+sess.run(init)
 
-# Create Computation Graph
-nn_instance = myNeuralNet(dim_input, dim_output)
-nn_instance.addHiddenLayer(1000, activation_fn=tf.nn.relu)
-# add more hidden layers here by calling addHiddenLayer as much as you want
-# a net of depth 3 should be sufficient for most tasks
-nn_instance.addFinalLayer()
-nn_instance.setup_training(learn_rate)
-nn_instance.setup_metrics()
-
-# Training steps
-with tf.Session() as sess:
-	sess.run(tf.global_variables_initializer())
-	test_pred = nn_instance.train(sess, max_epochs, train_size, batch_size) # fill in other arguments as you modify the train(self, sess, ...) in model.py
+test_out = nn1.train(sess,max_epochs,batch_size,train_size,mnist_train_inp,mnist_train_op,mnist_val_in,mnist_val_op,mnist_test_in,50)
+np.save('mnist_out.npy',test_out)
+sess.close() # fill in other arguments as you modify the train(self, sess, ...) in model.py
 	# you will have to pass xtrain, ytrain, etc ... also as arguments so that you can sample batches in train() of model.py
 
 # write code here to store test_pred in relevant file
