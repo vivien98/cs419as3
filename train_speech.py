@@ -83,7 +83,7 @@ test_size = len(test_input)
 train_signal = np.empty(shape=(train_size, dim_input))
 train_lbls = np.empty(shape=(train_size, dim_output))
 # this will take a lot of time
-for index_train in range(train_size):
+for index_train in range(100):
 	train_signal[index_train] = sample(train_input[index_train])
 	train_lbls[index_train] = np.transpose( np.reshape(np.array(train_labels[index_train]), newshape=(dim_output,1) ) )
 	if index_train%100 == 0:
@@ -101,7 +101,7 @@ print("Read full training set.")
 # read and store mfcc for validation set
 valid_signal = np.empty(shape=(valid_size, dim_input))
 valid_lbls = np.empty(shape=(valid_size, dim_output))
-for index_valid in range(valid_size):
+for index_valid in range(100):
 	valid_signal[index_valid] = sample(valid_input[index_valid])
 	valid_lbls[index_valid] = np.transpose( np.reshape(np.array(valid_labels[index_valid]), newshape=(dim_output,1) ) )
 	if index_valid%100 == 0:
@@ -110,7 +110,7 @@ print("Read full validation set.")
 
 # read and store mfcc for test set (only signals here, no labels)
 test_signal = np.empty(shape=(test_size, dim_input))
-for index_test in range(test_size):
+for index_test in range(100):
 	test_signal[index_test] = sample(test_input[index_test])
 	if index_test%100 == 0:
 		print("Read ", index_test, " instances out of full test set.")
@@ -129,7 +129,7 @@ nn_instance.addHiddenLayer(500)
 # add more hidden layers here by calling addHiddenLayer as much as you want
 # a net of depth 3 should be sufficient for most tasks
 nn_instance.addFinalLayer()
-nn_instance.setup_training(learn_rate)
+nn_instance.setup_training(learn_rate,loss_type="speech")
 nn_instance.setup_metrics()
 	
 # Training steps

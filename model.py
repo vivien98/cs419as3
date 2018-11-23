@@ -64,10 +64,13 @@ class myNeuralNet:
 		# You might also like to apply the final activation function (softmax / sigmoid) to get the predicted labels
 		
 	
-	def setup_training(self, learn_rate):
+	def setup_training(self, learn_rate, loss_type):
 		# Define loss, you might want to store it as self.loss
 		# Define the train step as self.train_step = ..., use an optimizer from tf.train and call minimize(self.loss)
-		self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(labels = self.oput,logits = self.mlp_out))
+		if(loss_type == "mnist"):
+			self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(labels = self.oput,logits = self.mlp_out))
+		elif(loss_type == "speech"):
+			self.loss = tf.reduce_mean(tf.nn.l2_loss(self.oput-tf.sign(self.mlp_out)))
 		self.train_step = tf.train.AdamOptimizer(learn_rate).minimize(self.loss)
 		pass
 
@@ -98,7 +101,9 @@ class myNeuralNet:
 			if (step % print_step) == 0:
 				# read the validation dataset and report loss, accuracy on it by running
 
-				val_acc, val_loss = sess.run([self.accuracy, self.loss], feed_dict={self.inp:val_inp , self.oput:val_op })
+				val_acc, val_loss, val_pred = sess.run([self.accuracy, self.loss, tf.sign(self.mlp_out)], feed_dict={self.inp:val_inp , self.oput:val_op })
+				print(val_pred)
+				print(val_loss)
 				print(val_acc)
 				# remember that the above will give you val_acc, val_loss as numpy values and not tensors
 				# store these train_loss and validation_loss in lists/arrays, write code to plot them vs steps
