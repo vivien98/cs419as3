@@ -18,7 +18,7 @@ The reason for this is that there are two important data cleaning tasks that you
 For more information, look at /data/census/description
 '''
 
-dim_input = 1+8+1+16+1+7+14+6+5+2+1+1+1+41 # change this according to your encoding of the input features
+dim_input = -1 # change this according to your encoding of the input features
 dim_output = 1 # binary class classification can be done using sigmoid
 
 max_epochs = 50
@@ -56,9 +56,9 @@ but the input labels in test case are garbage (since they are all -1).
 def get_clean_batches(batch_dict): # this is used because batchers (defined later) give us batch as python dictionary
 	batch_list = list(batch_dict.items())
 	no_instances = batch_list[0][1].shape[0] # will be batch_size in most cases ...
-	print(no_instances) # but because train_size is not exactly divisible by batch_size, no_instances might be different in a few cases
-	inp_batch = np.zeros(shape=(dim_input,no_instances))
-	inp_label = np.zeros(shape=(1,no_instances))
+	# print(no_instances) # but because train_size is not exactly divisible by batch_size, no_instances might be different in a few cases
+	inp_batch = np.empty(shape=(dim_input,no_instances))
+	inp_label = np.empty(shape=(1,no_instances))
 	rang = len(batch_list)
 	for index in range(rang):
 		elem_to_append = batch_list[index][1]
@@ -72,18 +72,17 @@ def get_clean_batches(batch_dict): # this is used because batchers (defined late
 	return inp_batch, inp_labels
 
 # define tensorflow objects to get input
-dataset_train = tf.contrib.data.make_csv_dataset(train_fname, batch_size)
+dataset_train = tf.contrib.data.make_csv_dataset(train_fname, batch_size,column_names="0","1","2","3","4","5","6"."7","8","9","10","11","12","13","14")
 iterator_train = dataset_train.make_initializable_iterator()
 train_batcher = iterator_train.get_next()
-inp_batch , inp_labels = get_clean_batches(train_batcher)
 # print(dataset_train)
 # print(iterator_train)
-# print(train_batcher)
-dataset_valid = tf.contrib.data.make_csv_dataset(valid_fname, valid_size) # all validation instances in a single tensor
+
+dataset_valid = tf.contrib.data.make_csv_dataset(valid_fname, valid_size,column_names="0","1","2","3","4","5","6"."7","8","9","10","11","12","13","14") # all validation instances in a single tensor
 iterator_valid = dataset_valid.make_initializable_iterator()
 valid_batcher = iterator_valid.get_next()
 
-dataset_test = tf.contrib.data.make_csv_dataset(test_fname, test_size) # all test instances in a single tensor
+dataset_test = tf.contrib.data.make_csv_dataset(test_fname, test_size,column_names="0","1","2","3","4","5","6"."7","8","9","10","11","12","13","14") # all test instances in a single tensor
 iterator_test = dataset_test.make_initializable_iterator()
 test_batcher = iterator_test.get_next()
 
