@@ -48,7 +48,7 @@ def sample(fpath):
 train_input = [] # list of strings - each entry is a filepath
 train_labels = [] # list of labels - each entry is a float
 with open(train_fname) as f:
-	append_str = 'data/tens_speech/train/'
+	append_str = 'data/speech/train/'
 	for line in f:
 		fileName, label = interpretLine(line, append_str)
 		train_input.append(fileName)
@@ -58,7 +58,7 @@ with open(train_fname) as f:
 valid_input = []
 valid_labels = []
 with open(val_fname) as f:
-	append_str = 'data/tens_speech/validation/'
+	append_str = 'data/speech/validation/'
 	for line in f:
 		fileName, label = interpretLine(line, append_str)
 		valid_input.append(fileName)
@@ -68,7 +68,7 @@ with open(val_fname) as f:
 test_input = []
 # remember you don't have test labels
 with open(test_fname) as f:
-	append_str = 'data/tens_speech/test/'
+	append_str = 'data/speech/test/'
 	for line in f:
 		fileName = append_str + line.strip()
 		test_input.append(fileName)
@@ -120,20 +120,22 @@ print("Read full test set.")
 
 max_epochs = 40
 learn_rate = 1e-4
-batch_size = 32
+batch_size = 34
 
 # Create Computation Graph
 nn_instance = myNeuralNet(dim_input, dim_output)
-nn_instance.addHiddenLayer(500, activation_fn=tf.nn.relu)
+nn_instance.addHiddenLayer(500)
+nn_instance.addHiddenLayer(500)
 # add more hidden layers here by calling addHiddenLayer as much as you want
 # a net of depth 3 should be sufficient for most tasks
 nn_instance.addFinalLayer()
 nn_instance.setup_training(learn_rate)
 nn_instance.setup_metrics()
-
+	
 # Training steps
 with tf.Session() as sess:
 	sess.run(tf.global_variables_initializer())
-	test_pred = nn_instance.train(sess) # add more arguments here
-
+	test_pred = nn_instance.train(sess,max_epochs,batch_size,train_size,train_signal,train_lbls,valid_signal,valid_lbls,test_signal,10) # add more arguments here
+	np.save('speech_out.npy',test_pred)
+	sess.close()
 # write code here to store test_pred in relevant file
