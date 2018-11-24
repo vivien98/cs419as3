@@ -120,13 +120,13 @@ print("Read full test set.")
 # Inputting part done ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## 
 
 max_epochs = 40
-learn_rate = 1
+learn_rate = 0.0001
 batch_size = 34
 
 # Create Computation Graph
 nn_instance = myNeuralNet(dim_input, dim_output)
-nn_instance.addHiddenLayer(1000)
-nn_instance.addHiddenLayer(1000)
+nn_instance.addHiddenLayer(500)
+nn_instance.addHiddenLayer(500)
 #nn_instance.addHiddenLayer(50)
 # add more hidden layers here by calling addHiddenLayer as much as you want
 # a net of depth 3 should be sufficient for most tasks
