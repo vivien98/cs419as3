@@ -56,7 +56,7 @@ class myNeuralNet:
 		
 		for i in range(len(self.layer_weight_list)-1):
 			fwd_pass = tf.add(tf.matmul(fwd_pass,self.layer_weight_list[i]),self.layer_bias_list[i])
-			fwd_pass = tf.nn.relu(fwd_pass)
+			fwd_pass = tf.nn.sigmoid(fwd_pass)
 		fwd_pass = tf.add(tf.matmul(fwd_pass,self.layer_weight_list[-1]),self.layer_bias_list[-1])
 		self.mlp_out = fwd_pass
 
@@ -109,7 +109,7 @@ class myNeuralNet:
 
 				val_acc, val_loss= sess.run([self.accuracy, self.loss], feed_dict={self.inp:val_inp , self.oput:val_op })
 				
-				print(val_loss)
+				#print(val_loss)
 				print(val_acc)
 				# remember that the above will give you val_acc, val_loss as numpy values and not tensors
 				# store these train_loss and validation_loss in lists/arrays, write code to plot them vs steps
