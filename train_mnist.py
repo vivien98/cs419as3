@@ -4,7 +4,7 @@ import tensorflow as tf
 import math
 import numpy as np
 
-from model import myNeuralNet
+from modelv import myNeuralNet
 
 # x denotes features, y denotes labels
 mnist_train_inp = np.load('./data/mnist/xtrain.npy')
@@ -20,8 +20,8 @@ nn1 = myNeuralNet(784,10)
 nn1.addHiddenLayer(500)
 nn1.addHiddenLayer(500)
 nn1.addFinalLayer()
-nn1.setup_training(0.001)
-nn1.setup_metrics()
+nn1.setup_training(0.001,"mnist")
+nn1.setup_metrics("mnist")
 
 sess = tf.Session()
 init = tf.global_variables_initializer()
@@ -34,4 +34,4 @@ sess.close() # fill in other arguments as you modify the train(self, sess, ...) 
 	# you will have to pass xtrain, ytrain, etc ... also as arguments so that you can sample batches in train() of model.py
 
 # write code here to store test_pred in relevant file
-	
+#

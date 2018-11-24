@@ -8,7 +8,7 @@ import numpy as np
 import librosa # for reading speech signals
 # you'll have to install this like tensorflow
 
-from model import myNeuralNet
+from modelv import myNeuralNet
 
 # Defining properties
 dim_input = 900
@@ -73,9 +73,9 @@ with open(test_fname) as f:
 		fileName = append_str + line.strip()
 		test_input.append(fileName)
 
-train_size = len(train_input)
-valid_size = len(valid_input)
-test_size = len(test_input)
+train_size = 100#len(train_input)
+valid_size = 100#len(valid_input)
+test_size = 100#len(test_input)
 
 ''' Create arrays for training, validation, test '''
 
@@ -83,8 +83,9 @@ test_size = len(test_input)
 train_signal = np.empty(shape=(train_size, dim_input))
 train_lbls = np.empty(shape=(train_size, dim_output))
 # this will take a lot of time
-for index_train in range(100):
+for index_train in range(train_size):
 	train_signal[index_train] = sample(train_input[index_train])
+	#train_lbls[index_train] = np.array(train_labels[index_train])
 	train_lbls[index_train] = np.transpose( np.reshape(np.array(train_labels[index_train]), newshape=(dim_output,1) ) )
 	if index_train%100 == 0:
 		print("Read ", index_train, " instances out of full train set.")
@@ -92,25 +93,25 @@ print("Read full training set.")
 # print(count_go)
 # print(count_stop)
         
-# print(train_signal.shape)
-# print(train_lbls.shape)
-
-# print(train_signal[0])
-# print(train_lbls[0])
+#print(train_signal.shape)
+#print(train_lbls.shape)
+#print(train_signal[0])
+#print(train_lbls[0])
 
 # read and store mfcc for validation set
 valid_signal = np.empty(shape=(valid_size, dim_input))
 valid_lbls = np.empty(shape=(valid_size, dim_output))
-for index_valid in range(100):
+for index_valid in range(valid_size):
 	valid_signal[index_valid] = sample(valid_input[index_valid])
 	valid_lbls[index_valid] = np.transpose( np.reshape(np.array(valid_labels[index_valid]), newshape=(dim_output,1) ) )
 	if index_valid%100 == 0:
 		print("Read ", index_valid, " instances out of full validation set.")
 print("Read full validation set.")
-
+print(np.shape(valid_signal))
+print(np.shape(valid_lbls))
 # read and store mfcc for test set (only signals here, no labels)
 test_signal = np.empty(shape=(test_size, dim_input))
-for index_test in range(100):
+for index_test in range(test_size):
 	test_signal[index_test] = sample(test_input[index_test])
 	if index_test%100 == 0:
 		print("Read ", index_test, " instances out of full test set.")
@@ -119,23 +120,24 @@ print("Read full test set.")
 # Inputting part done ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## 
 
 max_epochs = 40
-learn_rate = 1e-4
+learn_rate = 1
 batch_size = 34
 
 # Create Computation Graph
 nn_instance = myNeuralNet(dim_input, dim_output)
-nn_instance.addHiddenLayer(500)
-nn_instance.addHiddenLayer(500)
+nn_instance.addHiddenLayer(1000)
+nn_instance.addHiddenLayer(1000)
+#nn_instance.addHiddenLayer(50)
 # add more hidden layers here by calling addHiddenLayer as much as you want
 # a net of depth 3 should be sufficient for most tasks
 nn_instance.addFinalLayer()
 nn_instance.setup_training(learn_rate,loss_type="speech")
-nn_instance.setup_metrics()
-	
+nn_instance.setup_metrics("speech")
+
 # Training steps
 with tf.Session() as sess:
 	sess.run(tf.global_variables_initializer())
-	test_pred = nn_instance.train(sess,max_epochs,batch_size,train_size,train_signal,train_lbls,valid_signal,valid_lbls,test_signal,1) # add more arguments here
+	test_pred = nn_instance.train(sess,max_epochs,batch_size,train_size,train_signal,train_lbls,valid_signal,valid_lbls,test_signal,20) # add more arguments here
 	np.save('speech_out.npy',test_pred)
 	sess.close()
-# write code here to store test_pred in relevant file
+# write code here to store test_pred in relevant filepath
