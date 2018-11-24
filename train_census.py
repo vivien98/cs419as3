@@ -26,8 +26,7 @@ def get_type(inp,sess):
 	encoded = tf.one_hot(table.lookup(inp),8,dtype=tf.int8)
 	return encoded
 
-dim_input = 1+8+1+16+7+14+6+5+2+1+1+41	 # change this according to your encoding of the input features
-print (dim_input)
+dim_input = 104 #using one-hot encoding
 dim_output = 1 # binary class classification can be done using sigmoid
 
 max_epochs = 50
@@ -61,49 +60,8 @@ Also note that the last column is -1 in the test dataset.
 This is to make sure that the same code works for all the three inputting framework,
 but the input labels in test case are garbage (since they are all -1). 
 '''
-
-def get_clean_batches(batch_dict,sess): # this is used because batchers (defined later) give us batch as python dictionary
-	batch_list = list(batch_dict.items())
-	no_instances = batch_list[0][1].shape[0] # will be batch_size in most cases ...
-	# print(no_instances) # but because train_size is not exactly divisible by batch_size, no_instances might be different in a few cases
-	inp_batch = []#np.empty(shape=(14,no_instances))#dim_input later
-	inp_label = []#np.empty(shape=(1,no_instances))
-	rang = len(batch_list)
-	print (rang)
-	for index in range(rang):
-		elem_to_append = batch_list[index][1]
-		#print(elem_to_append.shape)
-		#print(sess.run(elem_to_append))
-		if index == rang-1: # last element in a row is the label
-			inp_label.append(elem_to_append)
-			#print(inp_label)
-		elif index == 1:
-			elem_to_append = get_type(elem_to_append,sess)
-			print (sess.run(elem_to_append))
-			inp_batch.append(elem_to_append)	
-		#else: # all other elements are features
-			#inp_batch.append(elem_to_append)
-			#print(elem_to_append)
-	inp_batch = tf.stack(inp_batch)
-	print (inp_batch.shape)		
-	inp_batch = np.concatenate(inp_batch)
-	print (inp_batch.shape)						
-	inp_batch = np.transpose(inp_batch)
-	print (inp_batch.shape)
-	print(sess.run(inp_batch[1]))
-	inp_label = np.transpose(np.array(inp_label))
-	# perform further cleaning here before returning
-	return inp_batch, inp_labels
-
-# define tensorflow objects to get input
-# dataset_train = tf.contrib.data.make_csv_dataset(train_fname, batch_size,column_names = ["0","1","2","3","4","5","6","7","8","9","10","11","12","13","14"])
-# iterator_train = dataset_train.make_initializable_iterator()
-# train_batcher = iterator_train.get_next()
-#get_clean_batches(train_batcher)
-# print(dataset_train)
-# print(iterator_train)
-
-train_dat = pd.read_csv(train_fname,delimiter=",")
+#---------------------------------------------data acquisition-------------------------------------
+'''train_dat = pd.read_csv(train_fname,delimiter=",")
 for i in range (len(train_dat)):
 	for j in range (15):
 		a = train_dat.iloc[i,j]
@@ -196,17 +154,60 @@ final_test = final_test.loc[:,column_list].fillna(0)
 print (len(list(final_test)))
 print(list(final_test))	
 test_data = final_test.values
-np.save("./census_test.npy",test_data)
-# # Create Computation Graph
-# nn_instance = myNeuralNet(dim_input, dim_output)
-# nn_instance.addHiddenLayer(200, activation_fn=tf.nn.relu)
-# # add more hidden layers here by calling addHiddenLayer as much as you want
-# # a net of depth 3 should be sufficient for most tasks
-# nn_instance.addFinalLayer()
-# nn_instance.setup_training(learn_rate,"mnist")
-# nn_instance.setup_metrics()
+np.save("./census_test.npy",test_data)'''
+train_data = np.load("census_train.npy")
+train_labels = np.load("census_train_labels.npy")
+#print (train_labels)
+k = []
+for i in range(len(train_labels)):
+	if(train_labels[i] == " <=50K"):
+		k.append(0)
+	else:
+		k.append(1)
+train_labels = k			
+valid_data = np.load("census_valid.npy")
+valid_labels = np.load("census_valid_labels.npy")
+k = []
+for i in range(len(valid_labels)):
+	if(valid_labels[i] == " <=50K"):
+		k.append(0)
+	else:
+		k.append(1)
+valid_labels = k
+# print (valid_labels)
+# print (train_labels)			
+test_data = np.load("census_test.npy")
+print (test_data.shape)
+print (train_data.shape)
+print(len(train_labels))
+print (valid_data.shape)
+print(len(valid_labels))
+#--------------------------------------end of data acquisuition-------------------------------------
+
+# Create Computation Graph
+nn_instance = myNeuralNet(dim_input, dim_output)
+nn_instance.addHiddenLayer(20, activation_fn=tf.nn.relu)
+#nn_instance.addHiddenLayer(200, activation_fn=tf.nn.relu)
+# add more hidden layers here by calling addHiddenLayer as much as you want
+# a net of depth 3 should be sufficient for most tasks
+nn_instance.addFinalLayer()
+nn_instance.setup_training(learn_rate,"mnist")
+nn_instance.setup_metrics()
+
+#setup variables
+max_epochs = 10
+batch_size = 100
+train_size = len(train_data)
 
 # # Instantiate Session
+sess = tf.Session()
+init = tf.global_variables_initializer()
+
+sess.run(init)
+
+test_out = nn_instance.train(sess,max_epochs,batch_size,train_size,train_data,train_labels,valid_data,valid_labels,test_data,50)
+np.save('census_out.npy',test_out)
+sess.close()
 # with tf.Session() as sess:
 # 	sess.run([iterator_train.initializer, iterator_valid.initializer, iterator_test.initializer])
 # 	sess.run(tf.global_variables_initializer())
