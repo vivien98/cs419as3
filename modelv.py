@@ -72,7 +72,7 @@ class myNeuralNet:
 		elif(loss_type == "speech"):
 			#self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(labels = self.oput,logits = self.mlp_out))
 			self.loss = tf.reduce_mean(tf.nn.l2_loss(tf.subtract(self.oput,tf.sigmoid(self.mlp_out))))
-		self.train_step = tf.train.AdamOptimizer(learn_rate).minimize(self.loss)
+		self.train_step = tf.train.RMSPropOptimizer(learn_rate).minimize(self.loss)
 		pass
 
 	def setup_metrics(self,ltype):
@@ -83,13 +83,13 @@ class myNeuralNet:
 			compare = tf.equal(tf.argmax(self.mlp_out,1),tf.argmax(self.oput,1))
 			self.accuracy = tf.reduce_mean(tf.cast(compare,tf.float32))
 		elif ltype == "speech":
-			self.result = tf.math.round(tf.sigmoid(self.mlp_out))
-			compare = tf.equal(tf.math.round(tf.sigmoid(self.mlp_out)),self.oput)
+			self.result = tf.round(tf.sigmoid(self.mlp_out))
+			compare = tf.equal(tf.round(tf.sigmoid(self.mlp_out)),self.oput)
 			self.accuracy = tf.reduce_mean(tf.cast(compare,tf.float32))
 		pass
 	
 	# you will need to add other arguments to this function as given below
-	def train(self, sess, max_epochs, batch_size, train_size,train_inp,train_op,val_inp,val_op,test_inp, print_step = 100): # valid_size, test_size, etc
+	def train(self, sess, max_epochs, batch_size, train_size,train_inp,train_op,val_inp,val_op,test_inp,print_step = 100): # valid_size, test_size, etc
 		# Write your training part here
 		# sess is a tensorflow session, used to run the computation graph
 		# note that all the functions uptil now were just constructing the computation graph
@@ -108,7 +108,8 @@ class myNeuralNet:
 				# read the validation dataset and report loss, accuracy on it by running
 
 				val_acc, val_loss= sess.run([self.accuracy, self.loss], feed_dict={self.inp:val_inp , self.oput:val_op })
-				
+				#val_lossarr.append(val_loss)
+				#val_accarr.append(val_acc)
 				#print(val_loss)
 				print(val_acc)
 				# remember that the above will give you val_acc, val_loss as numpy values and not tensors
@@ -116,7 +117,7 @@ class myNeuralNet:
 			# Above curves are *REALLY* important, they give deep insights on what's going on
 		# -- for loop ends --
 		# Now once training is done, run predictions on the test set
-
+			#train_lossarr.append(train_loss)
 		#self.test_pred = tf.argmax(self.mlp_out,1)
 		test_predictions = sess.run([self.result], feed_dict={self.inp:test_inp })
 		return test_predictions

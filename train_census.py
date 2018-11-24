@@ -5,7 +5,7 @@ import tensorflow as tf
 import numpy as np
 import math
 
-from model import myNeuralNet
+from modelv import myNeuralNet
 import pandas as pd
 
 '''
@@ -30,7 +30,7 @@ dim_input = 104 #using one-hot encoding
 dim_output = 1 # binary class classification can be done using sigmoid
 
 max_epochs = 50
-learn_rate = 1e-4
+learn_rate = 1e-2
 batch_size = 50
 
 def file_size(fname):
@@ -164,7 +164,7 @@ for i in range(len(train_labels)):
 		k.append(0)
 	else:
 		k.append(1)
-train_labels = k			
+train_labels = np.array(k).reshape(len(train_labels),1)			
 valid_data = np.load("census_valid.npy")
 valid_labels = np.load("census_valid_labels.npy")
 k = []
@@ -173,7 +173,7 @@ for i in range(len(valid_labels)):
 		k.append(0)
 	else:
 		k.append(1)
-valid_labels = k
+valid_labels = np.array(k).reshape(len(valid_labels),1)
 # print (valid_labels)
 # print (train_labels)			
 test_data = np.load("census_test.npy")
@@ -186,16 +186,16 @@ print(len(valid_labels))
 
 # Create Computation Graph
 nn_instance = myNeuralNet(dim_input, dim_output)
-nn_instance.addHiddenLayer(20, activation_fn=tf.nn.relu)
-#nn_instance.addHiddenLayer(200, activation_fn=tf.nn.relu)
+nn_instance.addHiddenLayer(104, activation_fn=tf.nn.relu)
+nn_instance.addHiddenLayer(26,activation_fn=tf.nn.relu)
 # add more hidden layers here by calling addHiddenLayer as much as you want
 # a net of depth 3 should be sufficient for most tasks
 nn_instance.addFinalLayer()
-nn_instance.setup_training(learn_rate,"mnist")
-nn_instance.setup_metrics()
+nn_instance.setup_training(learn_rate,"speech")
+nn_instance.setup_metrics("speech")
 
 #setup variables
-max_epochs = 10
+max_epochs = 5
 batch_size = 100
 train_size = len(train_data)
 

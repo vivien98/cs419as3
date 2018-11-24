@@ -103,8 +103,8 @@ class myNeuralNet:
 
 				val_acc, val_loss, val_pred = sess.run([self.accuracy, self.loss, tf.sign(self.mlp_out)], feed_dict={self.inp:val_inp , self.oput:val_op })
 				print(val_pred)
-				print(val_loss)
-				print(val_acc)
+				#print(val_loss)
+				#print(val_acc)
 				# remember that the above will give you val_acc, val_loss as numpy values and not tensors
 				# store these train_loss and validation_loss in lists/arrays, write code to plot them vs steps
 			# Above curves are *REALLY* important, they give deep insights on what's going on
