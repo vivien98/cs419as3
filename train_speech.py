@@ -75,7 +75,7 @@ with open(test_fname) as f:
 
 train_size = len(train_input)
 valid_size = len(valid_input)
-test_size = 100#len(test_input)
+test_size = len(test_input)
 
 ''' Create arrays for training, validation, test '''
 
@@ -119,15 +119,14 @@ print("Read full test set.")
 
 # Inputting part done ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## 
 
-max_epochs = 40
+max_epochs = 50
 learn_rate = 0.001
 batch_size = 20
 
 # Create Computation Graph
 nn_instance = myNeuralNet(dim_input, dim_output)
-nn_instance.addHiddenLayer(300)
-nn_instance.addHiddenLayer(300)
-#nn_instance.addHiddenLayer(500)
+nn_instance.addHiddenLayer(400)
+nn_instance.addHiddenLayer(400)
 #nn_instance.addHiddenLayer(50)
 # add more hidden layers here by calling addHiddenLayer as much as you want
 # a net of depth 3 should be sufficient for most tasks
